@@ -1,0 +1,154 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+var exprSpecs = new[]{
+		new Spec("Binary:Expr left,Token op,Expr right"),
+		new Spec("Grouping:Expr expression"),
+		new Spec("Literal:Object value"),
+		new Spec("Unary:Token op,Expr right")
+	};
+
+var stmtSpecs = new[]{
+		new Spec("Expression:Expr expr"),
+		new Spec("Print:Expr expr")
+	};
+#>
+using System;
+
+namespace CSLox 
+{
+	public interface IExprVisitor<T>
+    {
+<#
+foreach(var spec in exprSpecs)
+{
+#>
+        T Visit<#=spec.Name#>Expr(Expr.<#=spec.Name#> expr);
+<#
+}
+#>
+    }
+
+	public interface IStmtVisitor
+    {
+<#
+foreach(var spec in stmtSpecs)
+{
+#>
+        void Visit<#=spec.Name#>Stmt(Stmt.<#=spec.Name#> stmt);
+<#
+}
+#>
+    }
+
+	public abstract class Expr
+	{
+		public abstract T Accept<T>(IExprVisitor<T> visitor);
+
+<#
+foreach(var spec in exprSpecs)
+{
+#>
+		public class <#=spec.Name#> : Expr
+		{
+<#
+foreach(var field in spec.Fields)
+{
+#>
+			public <#=field.Type#> <#=field.FieldName#> { get; private set;}
+<#
+}
+#>
+			public <#=spec.Name#>(<#=String.Join(", ",spec.Fields.Select(f => f.Type + " " + f.Name))#>)
+			{
+<#
+foreach(var field in spec.Fields)
+{
+#>
+				this.<#=field.FieldName#> = <#=field.Name#>;
+<#
+}
+#>
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.Visit<#=spec.Name#>Expr(this);
+		}
+<#
+}
+#>
+	}
+
+	public abstract class Stmt
+	{
+		public abstract void Accept(IStmtVisitor visitor);
+
+<#
+foreach(var spec in stmtSpecs)
+{
+#>
+		public class <#=spec.Name#> : Stmt
+		{
+<#
+foreach(var field in spec.Fields)
+{
+#>
+			public <#=field.Type#> <#=field.FieldName#> { get; private set;}
+<#
+}
+#>
+			public <#=spec.Name#>(<#=String.Join(", ",spec.Fields.Select(f => f.Type + " " + f.Name))#>)
+			{
+<#
+foreach(var field in spec.Fields)
+{
+#>
+				this.<#=field.FieldName#> = <#=field.Name#>;
+<#
+}
+#>
+			}
+			public override void Accept(IStmtVisitor visitor) => visitor.Visit<#=spec.Name#>Stmt(this);
+		}
+<#
+}
+#>	
+	}
+
+}
+
+
+
+<#+
+class Spec
+{
+	public string Name;
+	public Field[] Fields;
+
+	public Spec(string all)
+	{
+		var spl = all.Split(':');
+		Name = spl[0];
+
+		var fields = spl[1].Split(',');
+		Fields = fields.Select(f => new Field(f)).ToArray();
+	}
+}
+
+class Field
+{
+	public string Type;
+	public string Name;
+
+	public Field(string all)
+	{
+		var spl = all.Split(' ');
+		Type = spl[0];
+		Name = spl[1];
+	}
+
+	public string FieldName => Name.Substring(0,1).ToUpper() + Name.Substring(1);
+}
+#>

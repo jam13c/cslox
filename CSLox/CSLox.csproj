@@ -6,17 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Expr.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Expr.tt</DependentUpon>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Expr.tt">
+    <None Update="ExpressionsAndStatements.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Expr.cs</LastGenOutput>
+      <LastGenOutput>ExpressionsAndStatements.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -25,10 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Expr.cs">
+    <Compile Update="ExpressionsAndStatements.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Expr.tt</DependentUpon>
+      <DependentUpon>ExpressionsAndStatements.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

@@ -13,17 +13,37 @@ namespace CSLox
             this.tokens = tokens;
         }
 
-        public Expr Parse()
+        public List<Stmt> Parse()
         {
-            try
+            var statements = new List<Stmt>();
+            while(!IsAtEnd())
             {
-                return Expression();
+                statements.Add(Statement());
             }
-            catch(ParseException)
-            {
-                return null;
-            }
+            return statements;
         }
+
+        private Stmt Statement()
+        {
+            if (Match(TokenType.Print)) return PrintStatement();
+            return ExpressionStatement();
+        }
+
+        
+        private Stmt PrintStatement()
+        {
+            var expr = Expression();
+            Consume(TokenType.Semicolon, "Expect ';' after value");
+            return new Stmt.Print(expr);
+        }
+
+        private Stmt ExpressionStatement()
+        {
+            var expr = Expression();
+            Consume(TokenType.Semicolon, "Expect ';' after value");
+            return new Stmt.Expression(expr);
+        }
+
 
         private Expr Expression()
         {
@@ -37,7 +57,7 @@ namespace CSLox
             {
                 var op = Previous();
                 var right = Comparison();
-                expr = new Binary(expr, op, right);
+                expr = new Expr.Binary(expr, op, right);
             }
             return expr;
         }
@@ -49,7 +69,7 @@ namespace CSLox
             {
                 var op = Previous();
                 var right = Addition();
-                expr = new Binary(expr, op, right);
+                expr = new Expr.Binary(expr, op, right);
             }
             return expr;
         }
@@ -61,7 +81,7 @@ namespace CSLox
             {
                 var op = Previous();
                 var right = Multipication();
-                expr = new Binary(expr, op, right);
+                expr = new Expr.Binary(expr, op, right);
             }
             return expr;
         }
@@ -73,7 +93,7 @@ namespace CSLox
             {
                 var op = Previous();
                 var right = Unary();
-                expr = new Binary(expr, op, right);
+                expr = new Expr.Binary(expr, op, right);
             }
             return expr;
         }
@@ -84,24 +104,24 @@ namespace CSLox
             {
                 var op = Previous();
                 var right = Unary();
-                return new Unary(op, right);
+                return new Expr.Unary(op, right);
             }
             return Primary();
         }
 
         private Expr Primary()
         {
-            if (Match(TokenType.False)) return new Literal(false);
-            if (Match(TokenType.True)) return new Literal(true);
-            if (Match(TokenType.Nil)) return new Literal(null);
+            if (Match(TokenType.False)) return new Expr.Literal(false);
+            if (Match(TokenType.True)) return new Expr.Literal(true);
+            if (Match(TokenType.Nil)) return new Expr.Literal(null);
 
             if (Match(TokenType.Number, TokenType.String))
-                return new Literal(Previous().Literal);
+                return new Expr.Literal(Previous().Literal);
             if(Match(TokenType.LeftParen))
             {
                 var expr = Expression();
                 Consume(TokenType.RightParen, "Expect ')' after expression");
-                return new Grouping(expr);
+                return new Expr.Grouping(expr);
             }
 
             throw Error(Peek(), "Expect expression");

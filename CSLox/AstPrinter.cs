@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CSLox
 {
-    public class AstPrinter : IVisitor<string>
+    public class AstPrinter : IExprVisitor<string>
     {
         public string Print(Expr expr)
         {
@@ -21,25 +21,35 @@ namespace CSLox
             sb.Append(")");
             return sb.ToString();
         }
-        public string VisitBinary(Binary expr)
+        public string VisitBinaryExpr(Expr.Binary expr)
         {
             return Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
         }
 
-        public string VisitGrouping(Grouping expr)
+        public string VisitGroupingExpr(Expr.Grouping expr)
         {
             return Parenthesize("group", expr.Expression);
         }
 
-        public string VisitLiteral(Literal expr)
+        public string VisitLiteralExpr(Expr.Literal expr)
         {
             if (expr.Value == null) return "nil";
             return expr.Value.ToString();
         }
 
-        public string VisitUnary(Unary expr)
+        public string VisitUnaryExpr(Expr.Unary expr)
         {
             return Parenthesize(expr.Op.Lexeme, expr.Right);
+        }
+
+        public string VisitExpressionStmt(Stmt.Expression stmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitPrintStmt(Stmt.Print stmt)
+        {
+            throw new NotImplementedException();
         }
     }
 }

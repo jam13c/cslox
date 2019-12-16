@@ -4,21 +4,25 @@ using System.Text;
 
 namespace CSLox
 {
-    public class Interpreter : IVisitor<object>
+    public class Interpreter : IExprVisitor<object>, IStmtVisitor
     {
-        public void Interpret(Expr expr)
+        public void Interpret(List<Stmt> statements)
         {
             try
             {
-                var value = Evaluate(expr);
-                Console.WriteLine(Stringify(value));
+                foreach(var stmt in statements)
+                {
+                    Execute(stmt);
+                }
             }
             catch(RuntimeException ex)
             {
                 Program.RuntimeError(ex);
             }
         }
-        public object VisitBinary(Binary expr)
+
+
+        public object VisitBinaryExpr(Expr.Binary expr)
         {
             var left = Evaluate(expr.Left);
             var right = Evaluate(expr.Right);
@@ -66,11 +70,11 @@ namespace CSLox
             return null;
         }
 
-        public object VisitGrouping(Grouping expr) => Evaluate(expr.Expression);
+        public object VisitGroupingExpr(Expr.Grouping expr) => Evaluate(expr.Expression);
 
-        public object VisitLiteral(Literal expr) => expr.Value;
+        public object VisitLiteralExpr(Expr.Literal expr) => expr.Value;
 
-        public object VisitUnary(Unary expr)
+        public object VisitUnaryExpr(Expr.Unary expr)
         {
             var right = Evaluate(expr.Right);
             switch(expr.Op.Type)
@@ -83,8 +87,20 @@ namespace CSLox
             }
             return null;
         }
+        public void VisitExpressionStmt(Stmt.Expression stmt)
+        {
+            Evaluate(stmt.Expr);
+        }
+
+        public void VisitPrintStmt(Stmt.Print stmt)
+        {
+            var value = Evaluate(stmt.Expr);
+            Console.WriteLine(Stringify(value));
+        }
 
         private Object Evaluate(Expr expr) => expr.Accept(this);
+        private void Execute(Stmt stmt) => stmt.Accept(this);
+
         private bool IsTruthy(object value)
         {
             if (value == null) return false;
@@ -129,5 +145,8 @@ namespace CSLox
             if (value == null) return "nil";
             return value.ToString();
         }
+
+        
+
     }
 }
