@@ -1,0 +1,98 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+var specs = new[]{
+		new Spec("Binary:Expr left,Token op,Expr right"),
+		new Spec("Grouping:Expr expression"),
+		new Spec("Literal:Object value"),
+		new Spec("Unary:Token op,Expr right")
+	};
+#>
+using System;
+
+namespace CSLox 
+{
+	public interface IVisitor<T>
+    {
+<#
+foreach(var spec in specs)
+{
+#>
+        T Visit<#=spec.Name#>(<#=spec.Name#> expr);
+<#
+}
+#>
+    }
+
+	public abstract class Expr
+	{
+		public abstract T Accept<T>(IVisitor<T> visitor);
+	}
+
+<#
+foreach(var spec in specs)
+{
+#>
+	public class <#=spec.Name#> : Expr
+	{
+<#
+foreach(var field in spec.Fields)
+{
+#>
+		public <#=field.Type#> <#=field.FieldName#> { get; private set;}
+<#
+}
+#>
+		public <#=spec.Name#>(<#=String.Join(", ",spec.Fields.Select(f => f.Type + " " + f.Name))#>)
+		{
+<#
+foreach(var field in spec.Fields)
+{
+#>
+			this.<#=field.FieldName#> = <#=field.Name#>;
+<#
+}
+#>
+		}
+		public override T Accept<T>(IVisitor<T> visitor) => visitor.Visit<#=spec.Name#>(this);
+	}
+<#
+}
+#>
+}
+
+<#+
+class Spec
+{
+	public string Name;
+	public Field[] Fields;
+
+	public Spec(string all)
+	{
+		var spl = all.Split(':');
+		Name = spl[0];
+
+		var fields = spl[1].Split(',');
+		Fields = fields.Select(f => new Field(f)).ToArray();
+	}
+}
+
+class Field
+{
+	public string Type;
+	public string Name;
+
+	public Field(string all)
+	{
+		var spl = all.Split(' ');
+		Type = spl[0];
+		Name = spl[1];
+	}
+
+	public string FieldName => Name.Substring(0,1).ToUpper() + Name.Substring(1);
+}
+#>
