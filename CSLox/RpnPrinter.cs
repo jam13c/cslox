@@ -10,10 +10,21 @@ namespace CSLox
         {
             return expr.Accept(this);
         }
+
+        public string VisitAssignExpr(Expr.Assign expr)
+        {
+            throw new NotImplementedException();
+        }
+
         public string VisitBinaryExpr(Expr.Binary expr)
         {
             return $"{expr.Left.Accept(this)} {expr.Right.Accept(this)} {expr.Op.Lexeme}";           
 
+        }
+
+        public string VisitCallExpr(Expr.Call expr)
+        {
+            throw new NotImplementedException();
         }
 
         public string VisitExpressionStmt(Stmt.Expression stmt)
@@ -32,12 +43,22 @@ namespace CSLox
             return expr.Value.ToString();
         }
 
+        public string VisitLogicalExpr(Expr.Logical expr)
+        {
+            throw new NotImplementedException();
+        }
+
         public string VisitPrintStmt(Stmt.Print stmt)
         {
             throw new NotImplementedException();
         }
 
         public string VisitUnaryExpr(Expr.Unary expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitVariableExpr(Expr.Variable expr)
         {
             throw new NotImplementedException();
         }

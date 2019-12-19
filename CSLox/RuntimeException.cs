@@ -16,4 +16,13 @@ namespace CSLox
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
+
+    public class Return : RuntimeException
+    {
+        public object Value { get; private set; }
+        public Return(object value)
+        {
+            this.Value = value;
+        }
+    }
 }

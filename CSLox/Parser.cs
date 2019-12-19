@@ -18,18 +18,95 @@ namespace CSLox
             var statements = new List<Stmt>();
             while(!IsAtEnd())
             {
-                statements.Add(Statement());
+                statements.Add(Declaration());
             }
             return statements;
         }
 
+        private Stmt Declaration()
+        {
+            try
+            {
+                if (Match(TokenType.Fun)) return Function("function");
+                if (Match(TokenType.Var)) return VarDeclaration();
+
+                return Statement();
+            }
+            catch(ParseException ex)
+            {
+                Synchronize();
+                return null;
+            }
+        }
+
+
         private Stmt Statement()
         {
+            if (Match(TokenType.For)) return ForStatement();
+            if (Match(TokenType.If)) return IfStatement();
             if (Match(TokenType.Print)) return PrintStatement();
+            if (Match(TokenType.Return)) return ReturnStatement();
+            if (Match(TokenType.While)) return WhileStatement();
+            if (Match(TokenType.LeftBrace)) return new Stmt.Block(Block());
+
             return ExpressionStatement();
         }
 
-        
+        private Stmt ForStatement()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after 'for'");
+            Stmt initializer = null;
+            if (Match(TokenType.Semicolon))
+                initializer = null;
+            else if (Match(TokenType.Var))
+                initializer = VarDeclaration();
+            else
+                initializer = ExpressionStatement();
+
+            Expr condition = null;
+            if (!Check(TokenType.Semicolon))
+                condition = Expression();
+            Consume(TokenType.Semicolon, "Expect ';' after loop condition");
+
+            Expr increment = null;
+            if (!Check(TokenType.RightParen))
+                increment = Expression();
+            Consume(TokenType.RightParen, "Expect ')' after for clauses");
+
+            var body = Statement();
+
+            if (increment != null)
+                body = new Stmt.Block(new List<Stmt>
+                {
+                    body,
+                    new Stmt.Expression(increment)
+                });
+
+            if (condition == null)
+                condition = new Expr.Literal(true);
+            body = new Stmt.While(condition, body);
+
+            if (initializer != null)
+                body = new Stmt.Block(new List<Stmt>
+                {
+                    initializer,
+                    body
+                });
+
+            return body;
+        }
+
+        private Stmt IfStatement()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after 'if'");
+            var condition = Expression();
+            Consume(TokenType.RightParen, "Expect ')' after if condition");
+
+            var thenBranch = Statement();
+            var elseBranch = Match(TokenType.Else) ? Statement() : null;
+            return new Stmt.If(condition, thenBranch, elseBranch);
+        }
+
         private Stmt PrintStatement()
         {
             var expr = Expression();
@@ -37,6 +114,23 @@ namespace CSLox
             return new Stmt.Print(expr);
         }
 
+        private Stmt ReturnStatement()
+        {
+            var keyword = Previous();
+            var value = !Check(TokenType.Semicolon) ? Expression() : null;
+            Consume(TokenType.Semicolon, "Expect ';' after return value");
+            return new Stmt.Return(keyword, value);
+        }
+
+        private Stmt WhileStatement()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after 'while'");
+            var condition = Expression();
+            Consume(TokenType.RightParen, "Expect ')' after condition");
+            var body = Statement();
+
+            return new Stmt.While(condition, body);
+        }        
         private Stmt ExpressionStatement()
         {
             var expr = Expression();
@@ -44,10 +138,95 @@ namespace CSLox
             return new Stmt.Expression(expr);
         }
 
+        private Stmt Function(string kind)
+        {
+            var name = Consume(TokenType.Identifier, $"Expect {kind} name");
+            Consume(TokenType.LeftParen, $"Expect '(' after {kind} name");
+            var parameters = new List<Token>();
+            if(!Check(TokenType.RightParen))
+            {
+                do
+                {
+                    if (parameters.Count >= 255)
+                    {
+                        Error(Peek(), "Cannot have more than 255 parameters");
+                    }
+                    parameters.Add(Consume(TokenType.Identifier, "Expect parameter name"));
+                }
+                while (Match(TokenType.Comma));
+            }
+            Consume(TokenType.RightParen, "Expect ')' after parameters");
+            Consume(TokenType.LeftBrace, $"Expect '{{' before {kind} body");
+            var body = Block();
+            return new Stmt.Function(name, parameters, body);
+        }
+
+        private Stmt VarDeclaration()
+        {
+            var name = Consume(TokenType.Identifier, "Expect varaible name");
+
+            Expr initializer = null;
+            if(Match(TokenType.Equal))
+            {
+                initializer = Expression();
+            }
+            Consume(TokenType.Semicolon, "Expect ';' after variable declaration");
+            return new Stmt.Var(name, initializer);
+        }
+
+        
+        private List<Stmt> Block()
+        {
+            var statements = new List<Stmt>();
+            while (!Check(TokenType.RightBrace) && !IsAtEnd())
+                statements.Add(Declaration());
+            Consume(TokenType.RightBrace, "Expect '}' after block");
+            return statements;
+        }
 
         private Expr Expression()
         {
-            return Equality();
+            return Assignment();
+        }
+        private Expr Assignment()
+        {
+            var expr = Or();
+            if (Match(TokenType.Equal))
+            {
+                var equals = Previous();
+                var value = Assignment();
+                if (expr is Expr.Variable variableExpr)
+                {
+                    var name = variableExpr.Name;
+                    return new Expr.Assign(name, value);
+                }
+                Error(equals, "Invalid assignment target");
+            }
+            return expr;
+        }
+
+        private Expr Or()
+        {
+            var expr = And();
+            while(Match(TokenType.Or))
+            {
+                var op = Previous();
+                var right = And();
+                expr = new Expr.Logical(expr, op, right);
+            }
+            return expr;
+        }
+
+        private Expr And()
+        {
+            var expr = Equality();
+            while (Match(TokenType.And))
+            {
+                var op = Previous();
+                var right = Equality();
+                expr = new Expr.Logical(expr, op, right);
+            }
+            return expr;
         }
 
         private Expr Equality()
@@ -106,7 +285,38 @@ namespace CSLox
                 var right = Unary();
                 return new Expr.Unary(op, right);
             }
-            return Primary();
+
+            return Call();
+        }
+
+        private Expr Call()
+        {
+            var expr = Primary();
+            while (true)
+            {
+                if (Match(TokenType.LeftParen))
+                    expr = FinishCall(expr);
+                else
+                    break;
+            }
+            return expr;
+        }
+
+        private Expr FinishCall(Expr callee)
+        {
+            var args = new List<Expr>();
+            if(!Check(TokenType.RightParen))
+            {
+                do
+                {
+                    args.Add(Expression());
+                } while (Match(TokenType.Comma));
+            }
+            if (args.Count >= 255)
+                Error(Peek(), "Cannot have more than 255 arguments");
+
+            var paren = Consume(TokenType.RightParen, "Expect ')' after arguments");
+            return new Expr.Call(callee, paren, args);
         }
 
         private Expr Primary()
@@ -117,6 +327,10 @@ namespace CSLox
 
             if (Match(TokenType.Number, TokenType.String))
                 return new Expr.Literal(Previous().Literal);
+
+            if (Match(TokenType.Identifier))
+                return new Expr.Variable(Previous());
+
             if(Match(TokenType.LeftParen))
             {
                 var expr = Expression();

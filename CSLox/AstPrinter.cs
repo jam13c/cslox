@@ -51,5 +51,25 @@ namespace CSLox
         {
             throw new NotImplementedException();
         }
+
+        public string VisitVariableExpr(Expr.Variable expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitAssignExpr(Expr.Assign expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitLogicalExpr(Expr.Logical expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitCallExpr(Expr.Call expr)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

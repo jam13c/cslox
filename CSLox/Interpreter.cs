@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CSLox.Native;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +7,14 @@ namespace CSLox
 {
     public class Interpreter : IExprVisitor<object>, IStmtVisitor
     {
+        public Environment Globals { get; } = new Environment();
+        private Environment environment;
+        public Interpreter()
+        {
+            environment = Globals;
+
+            Globals.Define("clock", new Clock());
+        }
         public void Interpret(List<Stmt> statements)
         {
             try
@@ -21,6 +30,13 @@ namespace CSLox
             }
         }
 
+
+        public object VisitAssignExpr(Expr.Assign expr)
+        {
+            var value = Evaluate(expr.Value);
+            environment.Assign(expr.Name, value);
+            return value;
+        }
 
         public object VisitBinaryExpr(Expr.Binary expr)
         {
@@ -70,10 +86,43 @@ namespace CSLox
             return null;
         }
 
+        public object VisitCallExpr(Expr.Call expr)
+        {
+            var callee = Evaluate(expr.Callee);
+
+            var args = new List<object>();
+            foreach (var argExpr in expr.Arguments)
+                args.Add(Evaluate(argExpr));
+
+            if(callee is ICallable function)
+            {
+                var arity = function.Arity();
+                if (args.Count != arity)
+                    throw new RuntimeException($"Expected {arity} arguments, but got {args.Count}", expr.Paren);
+
+                return function.Call(this, args);
+            }
+
+            throw new RuntimeException("Can only call functions and classes", expr.Paren);
+        }
+
         public object VisitGroupingExpr(Expr.Grouping expr) => Evaluate(expr.Expression);
 
         public object VisitLiteralExpr(Expr.Literal expr) => expr.Value;
-
+        
+        public object VisitLogicalExpr(Expr.Logical expr)
+        {
+            var left = Evaluate(expr.Left);
+            if(expr.Op.Type == TokenType.Or)
+            {
+                if (IsTruthy(left)) return left;
+            }
+            else
+            {
+                if (!IsTruthy(left)) return left;
+            }
+            return Evaluate(expr.Right);
+        }
         public object VisitUnaryExpr(Expr.Unary expr)
         {
             var right = Evaluate(expr.Right);
@@ -87,9 +136,31 @@ namespace CSLox
             }
             return null;
         }
+        public object VisitVariableExpr(Expr.Variable expr)
+        {
+            return environment.Get(expr.Name);
+        }
+        public void VisitBlockStmt(Stmt.Block stmt)
+        {
+            ExecuteBlock(stmt.Statements, new Environment(environment));
+        }               
+
         public void VisitExpressionStmt(Stmt.Expression stmt)
         {
             Evaluate(stmt.Expr);
+        }
+        
+        public void VisitFunctionStmt(Stmt.Function stmt)
+        {
+            var function = new Function(stmt);
+            environment.Define(stmt.Name.Lexeme, function);
+        }
+        public void VisitIfStmt(Stmt.If stmt)
+        {
+            if (IsTruthy(Evaluate(stmt.Condition)))
+                Execute(stmt.ThenBranch);
+            else if (stmt.ElseBranch != null)
+                Execute(stmt.ElseBranch);
         }
 
         public void VisitPrintStmt(Stmt.Print stmt)
@@ -97,9 +168,52 @@ namespace CSLox
             var value = Evaluate(stmt.Expr);
             Console.WriteLine(Stringify(value));
         }
+        
+        public void VisitReturnStmt(Stmt.Return stmt)
+        {
+            object value = null;
+            if (stmt.Value != null)
+                value = Evaluate(stmt.Value);
+            throw new Return(value); 
+        }
+
+        public void VisitVarStmt(Stmt.Var stmt)
+        {
+            if (stmt.Initializer != null)
+            {
+                environment.Define(stmt.Name.Lexeme, Evaluate(stmt.Initializer));
+            }
+            else
+            {
+                environment.Define(stmt.Name.Lexeme);
+            }
+        }
+
+        public void VisitWhileStmt(Stmt.While stmt)
+        {
+            while(IsTruthy(Evaluate(stmt.Condition)))
+            {
+                Execute(stmt.Body);
+            }
+        }
+
 
         private Object Evaluate(Expr expr) => expr.Accept(this);
         private void Execute(Stmt stmt) => stmt.Accept(this);
+        public void ExecuteBlock(List<Stmt> statements, Environment environment)
+        {
+            var previous = this.environment;
+            try
+            {
+                this.environment = environment;
+                foreach (var stmt in statements)
+                    Execute(stmt);
+            }
+            finally
+            {
+                this.environment = previous;
+            }
+        }
 
         private bool IsTruthy(object value)
         {
@@ -145,8 +259,6 @@ namespace CSLox
             if (value == null) return "nil";
             return value.ToString();
         }
-
-        
 
     }
 }
