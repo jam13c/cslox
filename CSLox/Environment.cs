@@ -32,6 +32,11 @@ namespace CSLox
             
         }
 
+        public object GetAt(int distance, Token name)
+        {
+            return Ancestor(distance).Get(name);
+        }
+
         public void Assign(Token name, object value)
         {
             if(values.ContainsKey(name.Lexeme))
@@ -46,6 +51,19 @@ namespace CSLox
             }
 
             throw new RuntimeException($"Undefined variable '{name.Lexeme}'", name);
+        }
+
+        public void AssignAt(int distance, Token name, object value)
+        {
+            Ancestor(distance).Define(name.Lexeme, value);
+        }
+
+        private Environment Ancestor(int distance)
+        {
+            var environment = this;
+            for (var i = 0; i < distance; i++)
+                environment = environment.enclosing;
+            return environment;
         }
 
         private class Value

@@ -71,5 +71,10 @@ namespace CSLox
         {
             throw new NotImplementedException();
         }
+
+        public string VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

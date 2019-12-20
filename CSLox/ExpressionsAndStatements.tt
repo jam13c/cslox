@@ -6,6 +6,7 @@
 <#@ output extension=".cs" #>
 <#
 var exprSpecs = new[]{
+		new Spec("AnonymousFunction:List<Token> parms,List<Stmt> body"),
 		new Spec("Assign:Token name,Expr value"),
 		new Spec("Binary:Expr left,Token op,Expr right"),
 		new Spec("Call:Expr callee,Token paren,List<Expr> arguments"),

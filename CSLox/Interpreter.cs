@@ -9,6 +9,8 @@ namespace CSLox
     {
         public Environment Globals { get; } = new Environment();
         private Environment environment;
+
+        private readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
         public Interpreter()
         {
             environment = Globals;
@@ -30,11 +32,19 @@ namespace CSLox
             }
         }
 
+        public void Resolve(Expr expr, int depth) => locals.Add(expr, depth);
 
+        public object VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)
+        {
+            return new AnonymousFunction(expr);
+        }
         public object VisitAssignExpr(Expr.Assign expr)
         {
             var value = Evaluate(expr.Value);
-            environment.Assign(expr.Name, value);
+            if (locals.TryGetValue(expr, out var distance))
+                environment.AssignAt(distance, expr.Name, value);
+            else
+                Globals.Assign(expr.Name, value);
             return value;
         }
 
@@ -138,7 +148,7 @@ namespace CSLox
         }
         public object VisitVariableExpr(Expr.Variable expr)
         {
-            return environment.Get(expr.Name);
+            return LookupVariable(expr.Name, expr);
         }
         public void VisitBlockStmt(Stmt.Block stmt)
         {
@@ -152,7 +162,7 @@ namespace CSLox
         
         public void VisitFunctionStmt(Stmt.Function stmt)
         {
-            var function = new Function(stmt);
+            var function = new Function(stmt, environment);
             environment.Define(stmt.Name.Lexeme, function);
         }
         public void VisitIfStmt(Stmt.If stmt)
@@ -258,6 +268,15 @@ namespace CSLox
         {
             if (value == null) return "nil";
             return value.ToString();
+        }
+
+        private object LookupVariable(Token name, Expr expr)
+        {
+            if(locals.TryGetValue(expr, out int distance))
+            {
+                return environment.GetAt(distance, name);
+            }
+            return Globals.Get(name);
         }
 
     }

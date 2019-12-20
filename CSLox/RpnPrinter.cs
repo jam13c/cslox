@@ -11,6 +11,11 @@ namespace CSLox
             return expr.Accept(this);
         }
 
+        public string VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)
+        {
+            throw new NotImplementedException();
+        }
+
         public string VisitAssignExpr(Expr.Assign expr)
         {
             throw new NotImplementedException();

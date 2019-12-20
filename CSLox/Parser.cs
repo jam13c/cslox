@@ -337,8 +337,34 @@ namespace CSLox
                 Consume(TokenType.RightParen, "Expect ')' after expression");
                 return new Expr.Grouping(expr);
             }
+            if(Match(TokenType.Fun))
+            {
+                return AnonymousFunction();
+            }
 
             throw Error(Peek(), "Expect expression");
+        }
+
+        private Expr AnonymousFunction()
+        {
+            Consume(TokenType.LeftParen, "Expect '(' after fun");
+            var parameters = new List<Token>();
+            if (!Check(TokenType.RightParen))
+            {
+                do
+                {
+                    if (parameters.Count >= 255)
+                    {
+                        Error(Peek(), "Cannot have more than 255 parameters");
+                    }
+                    parameters.Add(Consume(TokenType.Identifier, "Expect parameter name"));
+                }
+                while (Match(TokenType.Comma));
+            }
+            Consume(TokenType.RightParen, "Expect ')' after parameters");
+            Consume(TokenType.LeftBrace, "Expect '{' before body");
+            var body = Block();
+            return new Expr.AnonymousFunction(parameters, body);
         }
 
         private bool Match(params TokenType [] types)

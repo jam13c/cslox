@@ -59,10 +59,13 @@ namespace CSLox
             var scanner = new Scanner(source);
             var tokens = scanner.ScanTokens();
             var parser = new Parser(tokens);
-            var expr = parser.Parse();
+            var statements = parser.Parse();
             if (hadError) return;
 
-            interpreter.Interpret(expr);
+            var resolver = new Resolver(interpreter);
+            resolver.Resolve(statements);
+
+            interpreter.Interpret(statements);
         }
         public static void Error(int line, string message)
         {

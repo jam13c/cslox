@@ -4,20 +4,18 @@ using System.Text;
 
 namespace CSLox
 {
-    public class Function : ICallable
+    public class AnonymousFunction : ICallable
     {
-        private readonly Stmt.Function declaration;
-        private readonly Environment closure;
-        public Function(Stmt.Function declaration, Environment closure)
+        private readonly Expr.AnonymousFunction declaration;
+        public AnonymousFunction(Expr.AnonymousFunction declaration)
         {
             this.declaration = declaration;
-            this.closure = closure;
         }
         public int Arity() => declaration.Parms.Count;
 
         public object Call(Interpreter interpreter, List<object> arguments)
         {
-            var environment = new Environment(closure);
+            var environment = new Environment(interpreter.Globals);
             for (var i = 0; i < declaration.Parms.Count; i++)
                 environment.Define(declaration.Parms[i].Lexeme, arguments[i]);
 
@@ -32,6 +30,6 @@ namespace CSLox
             }
         }
 
-        public override string ToString() => $"<fn {declaration.Name.Lexeme}>";
+        public override string ToString() => "<fn anonymous>";
     }
 }

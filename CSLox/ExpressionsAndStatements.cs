@@ -5,6 +5,7 @@ namespace CSLox
 {
 	public interface IExprVisitor<T>
     {
+        T VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr);
         T VisitAssignExpr(Expr.Assign expr);
         T VisitBinaryExpr(Expr.Binary expr);
         T VisitCallExpr(Expr.Call expr);
@@ -31,6 +32,17 @@ namespace CSLox
 	{
 		public abstract T Accept<T>(IExprVisitor<T> visitor);
 
+		public class AnonymousFunction : Expr
+		{
+			public List<Token> Parms { get; private set;}
+			public List<Stmt> Body { get; private set;}
+			public AnonymousFunction(List<Token> parms, List<Stmt> body)
+			{
+				this.Parms = parms;
+				this.Body = body;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitAnonymousFunctionExpr(this);
+		}
 		public class Assign : Expr
 		{
 			public Token Name { get; private set;}
