@@ -10,15 +10,19 @@ var exprSpecs = new[]{
 		new Spec("Assign:Token name,Expr value"),
 		new Spec("Binary:Expr left,Token op,Expr right"),
 		new Spec("Call:Expr callee,Token paren,List<Expr> arguments"),
+		new Spec("Get:Expr obj,Token name"),
 		new Spec("Grouping:Expr expression"),
 		new Spec("Literal:Object value"),
 		new Spec("Logical:Expr left,Token op,Expr right"),
+		new Spec("Set:Expr obj,Token name,Expr value"),
+		new Spec("This:Token keyword"),
 		new Spec("Unary:Token op,Expr right"),
 		new Spec("Variable:Token name")
 	};
 
 var stmtSpecs = new[]{
 		new Spec("Block:List<Stmt> statements"),
+		new Spec("Class:Token name,List<Stmt.Function> methods"),
 		new Spec("Expression:Expr expr"),
 		new Spec("Function:Token name,List<Token> parms,List<Stmt> body"),
 		new Spec("If:Expr condition,Stmt thenBranch,Stmt elseBranch"),

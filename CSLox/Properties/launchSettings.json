@@ -1,8 +1,7 @@
 {
   "profiles": {
     "CSLox": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\git_repos\\jam13c\\cslox\\Scripts\\global_local.cl\""
+      "commandName": "Project"
     }
   }
 }

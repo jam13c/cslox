@@ -115,6 +115,16 @@ namespace CSLox
 
             throw new RuntimeException("Can only call functions and classes", expr.Paren);
         }
+        public object VisitGetExpr(Expr.Get expr)
+        {
+            var obj = Evaluate(expr.Obj);
+            if(obj is Instance inst)
+            {
+                return inst.Get(expr.Name);
+            }
+
+            throw new RuntimeException("Only instances have properties", expr.Name);
+        }
 
         public object VisitGroupingExpr(Expr.Grouping expr) => Evaluate(expr.Expression);
 
@@ -133,6 +143,25 @@ namespace CSLox
             }
             return Evaluate(expr.Right);
         }
+
+        public object VisitSetExpr(Expr.Set expr)
+        {
+            var obj = Evaluate(expr.Obj);
+            if(!(obj is Instance inst))
+            {
+                throw new RuntimeException("Only instances have fields", expr.Name);
+            }
+
+            var value = Evaluate(expr.Value);
+            inst.Set(expr.Name, value);
+            return value;
+        }
+
+        public object VisitThisExpr(Expr.This expr)
+        {
+            return LookupVariable(expr.Keyword, expr);
+        }
+
         public object VisitUnaryExpr(Expr.Unary expr)
         {
             var right = Evaluate(expr.Right);
@@ -153,8 +182,20 @@ namespace CSLox
         public void VisitBlockStmt(Stmt.Block stmt)
         {
             ExecuteBlock(stmt.Statements, new Environment(environment));
-        }               
+        }
+        public void VisitClassStmt(Stmt.Class stmt)
+        {
+            environment.Define(stmt.Name.Lexeme, null);
+            var methods = new Dictionary<string, Function>();
+            foreach(var method in stmt.Methods)
+            {
+                var function = new Function(method, environment, method.Name.Lexeme == "init");
+                methods[method.Name.Lexeme] = function;
+            }
 
+            var cls = new Class(stmt.Name.Lexeme, methods);
+            environment.Assign(stmt.Name, cls);
+        }
         public void VisitExpressionStmt(Stmt.Expression stmt)
         {
             Evaluate(stmt.Expr);
@@ -162,7 +203,7 @@ namespace CSLox
         
         public void VisitFunctionStmt(Stmt.Function stmt)
         {
-            var function = new Function(stmt, environment);
+            var function = new Function(stmt, environment, false);
             environment.Define(stmt.Name.Lexeme, function);
         }
         public void VisitIfStmt(Stmt.If stmt)
@@ -189,14 +230,12 @@ namespace CSLox
 
         public void VisitVarStmt(Stmt.Var stmt)
         {
+            object value = null;
             if (stmt.Initializer != null)
             {
-                environment.Define(stmt.Name.Lexeme, Evaluate(stmt.Initializer));
+                value = Evaluate(stmt.Initializer);
             }
-            else
-            {
-                environment.Define(stmt.Name.Lexeme);
-            }
+            environment.Define(stmt.Name.Lexeme, value);
         }
 
         public void VisitWhileStmt(Stmt.While stmt)
@@ -274,7 +313,7 @@ namespace CSLox
         {
             if(locals.TryGetValue(expr, out int distance))
             {
-                return environment.GetAt(distance, name);
+                return environment.GetAt(distance, name.Lexeme);
             }
             return Globals.Get(name);
         }

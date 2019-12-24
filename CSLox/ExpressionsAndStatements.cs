@@ -9,9 +9,12 @@ namespace CSLox
         T VisitAssignExpr(Expr.Assign expr);
         T VisitBinaryExpr(Expr.Binary expr);
         T VisitCallExpr(Expr.Call expr);
+        T VisitGetExpr(Expr.Get expr);
         T VisitGroupingExpr(Expr.Grouping expr);
         T VisitLiteralExpr(Expr.Literal expr);
         T VisitLogicalExpr(Expr.Logical expr);
+        T VisitSetExpr(Expr.Set expr);
+        T VisitThisExpr(Expr.This expr);
         T VisitUnaryExpr(Expr.Unary expr);
         T VisitVariableExpr(Expr.Variable expr);
     }
@@ -19,6 +22,7 @@ namespace CSLox
 	public interface IStmtVisitor
     {
         void VisitBlockStmt(Stmt.Block stmt);
+        void VisitClassStmt(Stmt.Class stmt);
         void VisitExpressionStmt(Stmt.Expression stmt);
         void VisitFunctionStmt(Stmt.Function stmt);
         void VisitIfStmt(Stmt.If stmt);
@@ -80,6 +84,17 @@ namespace CSLox
 			}
 			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitCallExpr(this);
 		}
+		public class Get : Expr
+		{
+			public Expr Obj { get; private set;}
+			public Token Name { get; private set;}
+			public Get(Expr obj, Token name)
+			{
+				this.Obj = obj;
+				this.Name = name;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitGetExpr(this);
+		}
 		public class Grouping : Expr
 		{
 			public Expr Expression { get; private set;}
@@ -110,6 +125,28 @@ namespace CSLox
 				this.Right = right;
 			}
 			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitLogicalExpr(this);
+		}
+		public class Set : Expr
+		{
+			public Expr Obj { get; private set;}
+			public Token Name { get; private set;}
+			public Expr Value { get; private set;}
+			public Set(Expr obj, Token name, Expr value)
+			{
+				this.Obj = obj;
+				this.Name = name;
+				this.Value = value;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitSetExpr(this);
+		}
+		public class This : Expr
+		{
+			public Token Keyword { get; private set;}
+			public This(Token keyword)
+			{
+				this.Keyword = keyword;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitThisExpr(this);
 		}
 		public class Unary : Expr
 		{
@@ -145,6 +182,17 @@ namespace CSLox
 				this.Statements = statements;
 			}
 			public override void Accept(IStmtVisitor visitor) => visitor.VisitBlockStmt(this);
+		}
+		public class Class : Stmt
+		{
+			public Token Name { get; private set;}
+			public List<Stmt.Function> Methods { get; private set;}
+			public Class(Token name, List<Stmt.Function> methods)
+			{
+				this.Name = name;
+				this.Methods = methods;
+			}
+			public override void Accept(IStmtVisitor visitor) => visitor.VisitClassStmt(this);
 		}
 		public class Expression : Stmt
 		{

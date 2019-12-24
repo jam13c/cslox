@@ -27,6 +27,7 @@ namespace CSLox
         {
             try
             {
+                if (Match(TokenType.Class)) return ClassDeclaration();
                 if (Match(TokenType.Fun)) return Function("function");
                 if (Match(TokenType.Var)) return VarDeclaration();
 
@@ -39,6 +40,7 @@ namespace CSLox
             }
         }
 
+        
 
         private Stmt Statement()
         {
@@ -138,7 +140,18 @@ namespace CSLox
             return new Stmt.Expression(expr);
         }
 
-        private Stmt Function(string kind)
+        private Stmt ClassDeclaration()
+        {
+            var name = Consume(TokenType.Identifier, "Expect class name");
+            Consume(TokenType.LeftBrace, "Expect '{' after class name");
+            var methods = new List<Stmt.Function>();
+            while (!Check(TokenType.RightBrace) && !IsAtEnd())
+                methods.Add(Function("method"));
+            Consume(TokenType.RightBrace, "Expect '}' after class body");
+            return new Stmt.Class(name, methods);
+        }
+
+        private Stmt.Function Function(string kind)
         {
             var name = Consume(TokenType.Identifier, $"Expect {kind} name");
             Consume(TokenType.LeftParen, $"Expect '(' after {kind} name");
@@ -199,6 +212,10 @@ namespace CSLox
                 {
                     var name = variableExpr.Name;
                     return new Expr.Assign(name, value);
+                }
+                else if(expr is Expr.Get getExpr)
+                {
+                    return new Expr.Set(getExpr.Obj, getExpr.Name, value);
                 }
                 Error(equals, "Invalid assignment target");
             }
@@ -296,6 +313,11 @@ namespace CSLox
             {
                 if (Match(TokenType.LeftParen))
                     expr = FinishCall(expr);
+                else if (Match(TokenType.Dot))
+                {
+                    var name = Consume(TokenType.Identifier, "Expect property name afrter '.'");
+                    expr = new Expr.Get(expr, name);
+                }
                 else
                     break;
             }
@@ -327,6 +349,8 @@ namespace CSLox
 
             if (Match(TokenType.Number, TokenType.String))
                 return new Expr.Literal(Previous().Literal);
+
+            if (Match(TokenType.This)) return new Expr.This(Previous());
 
             if (Match(TokenType.Identifier))
                 return new Expr.Variable(Previous());

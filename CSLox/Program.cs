@@ -64,6 +64,7 @@ namespace CSLox
 
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);
+            if (hadError) return;
 
             interpreter.Interpret(statements);
         }
@@ -82,14 +83,18 @@ namespace CSLox
 
         public static void RuntimeError(RuntimeException ex)
         {
-            Console.WriteLine(ex.Message);
-            Console.WriteLine($"[line {ex.Token.Line}]");
+            Console.WriteLine($"[line {ex.Token.Line}] {ex.Message}");
             hadRuntimeError = true;
         }
 
         static void Report(int line, string where, string message)
         {
             Console.WriteLine($"[Line {line}] Error{where}: {message}");
+        }
+
+        public static void Warn(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }
