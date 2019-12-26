@@ -7,7 +7,7 @@ namespace CSLox
     public class Resolver : IExprVisitor<object>, IStmtVisitor
     {
         private enum FunctionType { None, Function, Method, Initializer }
-        private enum ClassType { None, Class }
+        private enum ClassType { None, Class, Subclass }
 
         private readonly Interpreter interpreter;
         private readonly Stack<Dictionary<string, bool>> scopes = new Stack<Dictionary<string, bool>>();
@@ -37,6 +37,21 @@ namespace CSLox
             currentClass = ClassType.Class;
             Declare(stmt.Name);
             Define(stmt.Name);
+            if(stmt.Superclass != null
+                && stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme)
+            {
+                Program.Error(stmt.Superclass.Name, "Class cannot inherit from itself");
+            }
+            if(stmt.Superclass != null)
+            {
+                currentClass = ClassType.Subclass;
+                Resolve(stmt.Superclass);
+            }
+            if(stmt.Superclass != null)
+            {
+                BeginScope();
+                scopes.Peek().Add("super", true);
+            }
             BeginScope();
             scopes.Peek().Add("this", true);
             foreach(var method in stmt.Methods)
@@ -47,6 +62,10 @@ namespace CSLox
                 ResolveFunction(method, declaration);
             }
             EndScope();
+            if(stmt.Superclass != null)
+            {
+                EndScope();
+            }
             currentClass = enclosingClass;
         }
 
@@ -162,6 +181,20 @@ namespace CSLox
         {
             Resolve(expr.Value);
             Resolve(expr.Obj);
+            return null;
+        }
+
+        public object VisitSuperExpr(Expr.Super expr)
+        {
+            if(currentClass == ClassType.None)
+            {
+                Program.Error(expr.Keyword, "Cannot use 'super' outside of a class");
+            }
+            else if(currentClass != ClassType.Subclass)
+            {
+                Program.Error(expr.Keyword, "Cannot use 'super' in class with no subclass");
+            }
+            ResolveLocal(expr, expr.Keyword);
             return null;
         }
 

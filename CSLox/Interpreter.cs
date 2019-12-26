@@ -16,6 +16,7 @@ namespace CSLox
             environment = Globals;
 
             Globals.Define("clock", new Clock());
+            Globals.Define("input", new Input());
         }
         public void Interpret(List<Stmt> statements)
         {
@@ -157,6 +158,22 @@ namespace CSLox
             return value;
         }
 
+        public object VisitSuperExpr(Expr.Super expr)
+        {
+            var distance = locals[expr];
+            var superclass = (Class)environment.GetAt(distance, "super");
+
+            // this is always 1 level nearer
+            var obj = (Instance)environment.GetAt(distance - 1, "this");
+
+            var method = superclass.FindMethod(expr.Method.Lexeme);
+            if(method == null)
+            {
+                throw new RuntimeException($"Undefined property '{expr.Method.Lexeme}'", expr.Method);
+            }
+            return method.Bind(obj);
+        }
+
         public object VisitThisExpr(Expr.This expr)
         {
             return LookupVariable(expr.Keyword, expr);
@@ -185,7 +202,20 @@ namespace CSLox
         }
         public void VisitClassStmt(Stmt.Class stmt)
         {
+            Class superclass = null;
+            if(stmt.Superclass != null)
+            {
+                superclass = Evaluate(stmt.Superclass) as Class;
+                if (superclass == null)
+                    throw new RuntimeException("Superclass must be a class", stmt.Superclass.Name);
+            }
             environment.Define(stmt.Name.Lexeme, null);
+            if(stmt.Superclass != null)
+            {
+                environment = new Environment(environment);
+                environment.Define("super", superclass);
+            }
+
             var methods = new Dictionary<string, Function>();
             foreach(var method in stmt.Methods)
             {
@@ -193,7 +223,11 @@ namespace CSLox
                 methods[method.Name.Lexeme] = function;
             }
 
-            var cls = new Class(stmt.Name.Lexeme, methods);
+            var cls = new Class(stmt.Name.Lexeme, superclass, methods);
+            if(stmt.Superclass != null)
+            {
+                environment = environment.Enclosing;
+            }
             environment.Assign(stmt.Name, cls);
         }
         public void VisitExpressionStmt(Stmt.Expression stmt)

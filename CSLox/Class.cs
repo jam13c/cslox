@@ -7,11 +7,13 @@ namespace CSLox
     public class Class : ICallable
     {
         private readonly string name;
+        private readonly Class superclass;
         private readonly Dictionary<string, Function> methods;
 
-        public Class(string name, Dictionary<string,Function> methods)
+        public Class(string name, Class superclass, Dictionary<string,Function> methods)
         {
             this.name = name;
+            this.superclass = superclass;
             this.methods = methods;
         }
 
@@ -35,6 +37,9 @@ namespace CSLox
         {
             if (methods.TryGetValue(name, out var function))
                 return function;
+
+            if (superclass != null)
+                return superclass.FindMethod(name);
 
             return null;
         }

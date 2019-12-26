@@ -13,6 +13,8 @@ namespace CSLox
         {
             this.enclosing = enclosing;
         }
+        public Environment Enclosing => enclosing;
+
         public void Define(string name, object value) => values[name] = value;
 
         public object Get(Token name)

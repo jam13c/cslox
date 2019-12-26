@@ -14,6 +14,7 @@ namespace CSLox
         T VisitLiteralExpr(Expr.Literal expr);
         T VisitLogicalExpr(Expr.Logical expr);
         T VisitSetExpr(Expr.Set expr);
+        T VisitSuperExpr(Expr.Super expr);
         T VisitThisExpr(Expr.This expr);
         T VisitUnaryExpr(Expr.Unary expr);
         T VisitVariableExpr(Expr.Variable expr);
@@ -139,6 +140,17 @@ namespace CSLox
 			}
 			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitSetExpr(this);
 		}
+		public class Super : Expr
+		{
+			public Token Keyword { get; private set;}
+			public Token Method { get; private set;}
+			public Super(Token keyword, Token method)
+			{
+				this.Keyword = keyword;
+				this.Method = method;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitSuperExpr(this);
+		}
 		public class This : Expr
 		{
 			public Token Keyword { get; private set;}
@@ -186,10 +198,12 @@ namespace CSLox
 		public class Class : Stmt
 		{
 			public Token Name { get; private set;}
+			public Expr.Variable Superclass { get; private set;}
 			public List<Stmt.Function> Methods { get; private set;}
-			public Class(Token name, List<Stmt.Function> methods)
+			public Class(Token name, Expr.Variable superclass, List<Stmt.Function> methods)
 			{
 				this.Name = name;
+				this.Superclass = superclass;
 				this.Methods = methods;
 			}
 			public override void Accept(IStmtVisitor visitor) => visitor.VisitClassStmt(this);

@@ -143,12 +143,20 @@ namespace CSLox
         private Stmt ClassDeclaration()
         {
             var name = Consume(TokenType.Identifier, "Expect class name");
+
+            Expr.Variable superclass = null;
+            if(Match(TokenType.Less))
+            {
+                Consume(TokenType.Identifier, "Expect superclass name");
+                superclass = new Expr.Variable(Previous());
+            }
+
             Consume(TokenType.LeftBrace, "Expect '{' after class name");
             var methods = new List<Stmt.Function>();
             while (!Check(TokenType.RightBrace) && !IsAtEnd())
                 methods.Add(Function("method"));
             Consume(TokenType.RightBrace, "Expect '}' after class body");
-            return new Stmt.Class(name, methods);
+            return new Stmt.Class(name, superclass, methods);
         }
 
         private Stmt.Function Function(string kind)
@@ -349,6 +357,14 @@ namespace CSLox
 
             if (Match(TokenType.Number, TokenType.String))
                 return new Expr.Literal(Previous().Literal);
+
+            if(Match(TokenType.Super))
+            {
+                var keyword = Previous();
+                Consume(TokenType.Dot, "Expect '.' after super");
+                var method = Consume(TokenType.Identifier, "Expect superclass method name");
+                return new Expr.Super(keyword, method);
+            }
 
             if (Match(TokenType.This)) return new Expr.This(Previous());
 
