@@ -29,7 +29,7 @@ namespace CSLox
             }
             catch(RuntimeException ex)
             {
-                Program.RuntimeError(ex);
+                Runtime.RuntimeError(ex);
             }
         }
 
@@ -251,7 +251,7 @@ namespace CSLox
         public void VisitPrintStmt(Stmt.Print stmt)
         {
             var value = Evaluate(stmt.Expr);
-            Console.WriteLine(Stringify(value));
+            Runtime.Writer.WriteLine(Stringify(value));
         }
         
         public void VisitReturnStmt(Stmt.Return stmt)

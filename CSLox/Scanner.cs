@@ -100,7 +100,7 @@ namespace CSLox
                     }
                     else
                     {
-                        Program.Error(line, $"Unexpected character:{c}");
+                        Runtime.Error(line, $"Unexpected character '{c}'");
                     }
                     break;
             }
@@ -150,7 +150,7 @@ namespace CSLox
             }
             if(IsAtEnd())
             {
-                Program.Error(line, "Unterminated string");
+                Runtime.Error(line, "Unterminated string");
                 return;
             }
             Advance();

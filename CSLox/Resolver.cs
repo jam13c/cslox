@@ -40,7 +40,7 @@ namespace CSLox
             if(stmt.Superclass != null
                 && stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme)
             {
-                Program.Error(stmt.Superclass.Name, "Class cannot inherit from itself");
+                Runtime.Error(stmt.Superclass.Name, "Class cannot inherit from itself");
             }
             if(stmt.Superclass != null)
             {
@@ -99,13 +99,13 @@ namespace CSLox
         {
             if(currentFunction == FunctionType.None)
             {
-                Program.Error(stmt.Keyword, "Cannot return from top-level code");
+                Runtime.Error(stmt.Keyword, "Cannot return from top-level code");
             }
             if (stmt.Value != null)
             {
                 if(currentFunction == FunctionType.Initializer)
                 {
-                    Program.Error(stmt.Keyword, "Cannot return value from an initializer");
+                    Runtime.Error(stmt.Keyword, "Cannot return value from an initializer");
                 }
                 Resolve(stmt.Value);
             }
@@ -188,11 +188,11 @@ namespace CSLox
         {
             if(currentClass == ClassType.None)
             {
-                Program.Error(expr.Keyword, "Cannot use 'super' outside of a class");
+                Runtime.Error(expr.Keyword, "Cannot use 'super' outside of a class");
             }
             else if(currentClass != ClassType.Subclass)
             {
-                Program.Error(expr.Keyword, "Cannot use 'super' in class with no subclass");
+                Runtime.Error(expr.Keyword, "Cannot use 'super' in class with no subclass");
             }
             ResolveLocal(expr, expr.Keyword);
             return null;
@@ -202,7 +202,7 @@ namespace CSLox
         {
             if(currentClass == ClassType.None)
             {
-                Program.Error(expr.Keyword, "Cannot use 'this' outside of a class");
+                Runtime.Error(expr.Keyword, "Cannot use 'this' outside of a class");
                 return null;
             }
             ResolveLocal(expr, expr.Keyword);
@@ -219,7 +219,7 @@ namespace CSLox
         {
             if(scopes.Count > 0 && (scopes.Peek().TryGetValue(expr.Name.Lexeme, out var isReady) && !isReady))
             {
-                Program.Error(expr.Name, "Cannot read local variable in its own initialiser");
+                Runtime.Error(expr.Name, "Cannot read local variable in its own initialiser");
             }
             ResolveLocal(expr, expr.Name);
             return null;
@@ -280,7 +280,7 @@ namespace CSLox
             var scope = scopes.Peek();
             if(scope.ContainsKey(name.Lexeme))
             {
-                Program.Error(name, "Variable with this name already declared in this scope");
+                Runtime.Error(name, "Variable with this name already declared in this scope");
             }
             scope[name.Lexeme] = false;
         }

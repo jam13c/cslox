@@ -444,7 +444,7 @@ namespace CSLox
 
         private ParseException Error(Token token, string message)
         {
-            Program.Error(token, message);
+            Runtime.Error(token, message);
             return new ParseException(message);
         }
 
