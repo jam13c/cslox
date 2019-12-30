@@ -25,8 +25,11 @@ namespace CSLox
 	public interface IStmtVisitor
     {
         void VisitBlockStmt(Stmt.Block stmt);
+        void VisitBreakStmt(Stmt.Break stmt);
         void VisitClassStmt(Stmt.Class stmt);
+        void VisitContinueStmt(Stmt.Continue stmt);
         void VisitExpressionStmt(Stmt.Expression stmt);
+        void VisitForStmt(Stmt.For stmt);
         void VisitFunctionStmt(Stmt.Function stmt);
         void VisitIfStmt(Stmt.If stmt);
         void VisitPrintStmt(Stmt.Print stmt);
@@ -223,6 +226,15 @@ namespace CSLox
 			}
 			public override void Accept(IStmtVisitor visitor) => visitor.VisitBlockStmt(this);
 		}
+		public class Break : Stmt
+		{
+			public Token Keyword { get; private set;}
+			public Break(Token keyword)
+			{
+				this.Keyword = keyword;
+			}
+			public override void Accept(IStmtVisitor visitor) => visitor.VisitBreakStmt(this);
+		}
 		public class Class : Stmt
 		{
 			public Token Name { get; private set;}
@@ -236,6 +248,15 @@ namespace CSLox
 			}
 			public override void Accept(IStmtVisitor visitor) => visitor.VisitClassStmt(this);
 		}
+		public class Continue : Stmt
+		{
+			public Token Keyword { get; private set;}
+			public Continue(Token keyword)
+			{
+				this.Keyword = keyword;
+			}
+			public override void Accept(IStmtVisitor visitor) => visitor.VisitContinueStmt(this);
+		}
 		public class Expression : Stmt
 		{
 			public Expr Expr { get; private set;}
@@ -244,6 +265,21 @@ namespace CSLox
 				this.Expr = expr;
 			}
 			public override void Accept(IStmtVisitor visitor) => visitor.VisitExpressionStmt(this);
+		}
+		public class For : Stmt
+		{
+			public Stmt Initializer { get; private set;}
+			public Expr Condition { get; private set;}
+			public Expr Increment { get; private set;}
+			public Stmt Body { get; private set;}
+			public For(Stmt initializer, Expr condition, Expr increment, Stmt body)
+			{
+				this.Initializer = initializer;
+				this.Condition = condition;
+				this.Increment = increment;
+				this.Body = body;
+			}
+			public override void Accept(IStmtVisitor visitor) => visitor.VisitForStmt(this);
 		}
 		public class Function : Stmt
 		{

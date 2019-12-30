@@ -214,6 +214,12 @@ namespace CSLox
         {
             ExecuteBlock(stmt.Statements, new Environment(environment));
         }
+
+        public void VisitBreakStmt(Stmt.Break stmt)
+        {
+            throw new BreakException();
+        }
+
         public void VisitClassStmt(Stmt.Class stmt)
         {
             Class superclass = null;
@@ -244,11 +250,44 @@ namespace CSLox
             }
             environment.Assign(stmt.Name, cls);
         }
+
+        public void VisitContinueStmt(Stmt.Continue stmt)
+        {
+            throw new ContinueException();
+        }
         public void VisitExpressionStmt(Stmt.Expression stmt)
         {
             Evaluate(stmt.Expr);
         }
-        
+
+        public void VisitForStmt(Stmt.For stmt)
+        {
+            if (stmt.Initializer != null)
+                Execute(stmt.Initializer);
+
+            while(IsTruthy(Evaluate(stmt.Condition)))
+            {
+                try
+                {
+                    Execute(stmt.Body);
+                }
+                catch (BreakException)
+                {
+                    break;
+                }
+                catch (ContinueException)
+                {
+                    continue;
+                }
+                finally
+                {
+                    if (stmt.Increment != null)
+                        Evaluate(stmt.Increment);
+                }
+            }
+        }
+
+
         public void VisitFunctionStmt(Stmt.Function stmt)
         {
             var function = new Function(stmt, environment, false);
@@ -290,7 +329,18 @@ namespace CSLox
         {
             while(IsTruthy(Evaluate(stmt.Condition)))
             {
-                Execute(stmt.Body);
+                try
+                {
+                    Execute(stmt.Body);
+                }
+                catch (BreakException)
+                {
+                    break;
+                }
+                catch(ContinueException)
+                {
+                    continue;
+                }
             }
         }
 

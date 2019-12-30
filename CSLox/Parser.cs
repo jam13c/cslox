@@ -44,6 +44,8 @@ namespace CSLox
 
         private Stmt Statement()
         {
+            if (Match(TokenType.Break)) return BreakStatement();
+            if (Match(TokenType.Continue)) return ContinueStatement();
             if (Match(TokenType.For)) return ForStatement();
             if (Match(TokenType.If)) return IfStatement();
             if (Match(TokenType.Print)) return PrintStatement();
@@ -53,6 +55,64 @@ namespace CSLox
 
             return ExpressionStatement();
         }
+
+        private Stmt BreakStatement()
+        {
+            var stmt = new Stmt.Break(Previous());
+            Consume(TokenType.Semicolon, "Expect ';' after break");
+            return stmt;
+        }
+
+        private Stmt ContinueStatement()
+        {
+            var stmt = new Stmt.Continue(Previous());
+            Consume(TokenType.Semicolon, "Expect ';' after continue");
+            return stmt;
+        }
+
+        //private Stmt ForStatement()
+        //{
+        //    Consume(TokenType.LeftParen, "Expect '(' after 'for'");
+        //    Stmt initializer = null;
+        //    if (Match(TokenType.Semicolon))
+        //        initializer = null;
+        //    else if (Match(TokenType.Var))
+        //        initializer = VarDeclaration();
+        //    else
+        //        initializer = ExpressionStatement();
+
+        //    Expr condition = null;
+        //    if (!Check(TokenType.Semicolon))
+        //        condition = Expression();
+        //    Consume(TokenType.Semicolon, "Expect ';' after loop condition");
+
+        //    Expr increment = null;
+        //    if (!Check(TokenType.RightParen))
+        //        increment = Expression();
+        //    Consume(TokenType.RightParen, "Expect ')' after for clauses");
+
+        //    var body = Statement();
+
+        //    if (increment != null)
+        //        body = new Stmt.Block(new List<Stmt>
+        //        {
+        //            body,
+        //            new Stmt.Expression(increment)
+        //        });
+
+        //    if (condition == null)
+        //        condition = new Expr.Literal(true);
+        //    body = new Stmt.While(condition, body);
+
+        //    if (initializer != null)
+        //        body = new Stmt.Block(new List<Stmt>
+        //        {
+        //            initializer,
+        //            body
+        //        });
+
+        //    return body;
+        //}
 
         private Stmt ForStatement()
         {
@@ -77,25 +137,7 @@ namespace CSLox
 
             var body = Statement();
 
-            if (increment != null)
-                body = new Stmt.Block(new List<Stmt>
-                {
-                    body,
-                    new Stmt.Expression(increment)
-                });
-
-            if (condition == null)
-                condition = new Expr.Literal(true);
-            body = new Stmt.While(condition, body);
-
-            if (initializer != null)
-                body = new Stmt.Block(new List<Stmt>
-                {
-                    initializer,
-                    body
-                });
-
-            return body;
+            return new Stmt.For(initializer, condition ?? new Expr.Literal(true), increment, body);
         }
 
         private Stmt IfStatement()
@@ -490,6 +532,8 @@ namespace CSLox
                     case TokenType.While:
                     case TokenType.Print:
                     case TokenType.Return:
+                    case TokenType.Break:
+                    case TokenType.Continue:
                         return;
                 }
                 Advance();

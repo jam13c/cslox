@@ -17,7 +17,7 @@ namespace CSLox
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 
-    public class Return : RuntimeException
+    public class Return : Exception
     {
         public object Value { get; private set; }
         public Return(object value)
@@ -25,4 +25,7 @@ namespace CSLox
             this.Value = value;
         }
     }
+
+    public class BreakException : Exception { }
+    public class ContinueException : Exception { }
 }

@@ -8,11 +8,13 @@ namespace CSLox
     {
         private enum FunctionType { None, Function, Method, Initializer }
         private enum ClassType { None, Class, Subclass }
+        private enum LoopType { None, Loop }
 
         private readonly Interpreter interpreter;
         private readonly Stack<Dictionary<string, bool>> scopes = new Stack<Dictionary<string, bool>>();
         private FunctionType currentFunction = FunctionType.None;
-        private ClassType currentClass = ClassType.None; 
+        private ClassType currentClass = ClassType.None;
+        private LoopType currentLoop = LoopType.None;
 
         public Resolver(Interpreter interpreter)
         {
@@ -29,6 +31,14 @@ namespace CSLox
             BeginScope();
             Resolve(stmt.Statements);
             EndScope();
+        }
+
+        public void VisitBreakStmt(Stmt.Break stmt)
+        {
+            if(currentLoop == LoopType.None)
+            {
+                Runtime.Error(stmt.Keyword, "Can only break from within loop");
+            }
         }
 
         public void VisitClassStmt(Stmt.Class stmt)
@@ -69,9 +79,32 @@ namespace CSLox
             currentClass = enclosingClass;
         }
 
+        public void VisitContinueStmt(Stmt.Continue stmt)
+        {
+            if (currentLoop == LoopType.None)
+            {
+                Runtime.Error(stmt.Keyword, "Can only continue from within loop");
+            }
+        }
+
+       
+
         public void VisitExpressionStmt(Stmt.Expression stmt)
         {
             Resolve(stmt.Expr);
+        }
+
+        public void VisitForStmt(Stmt.For stmt)
+        {
+            var enclosingLoop = currentLoop;
+            currentLoop = LoopType.Loop;
+            if(stmt.Initializer != null)
+                Resolve(stmt.Initializer);
+            Resolve(stmt.Condition);
+            if(stmt.Increment != null)
+                Resolve(stmt.Increment);
+            Resolve(stmt.Body);
+            currentLoop = enclosingLoop;
         }
 
         public void VisitFunctionStmt(Stmt.Function stmt)
@@ -122,8 +155,11 @@ namespace CSLox
 
         public void VisitWhileStmt(Stmt.While stmt)
         {
+            var enclosingLoop = currentLoop;
+            currentLoop = LoopType.Loop;
             Resolve(stmt.Condition);
             Resolve(stmt.Body);
+            currentLoop = enclosingLoop;
         }
 
         public object VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)

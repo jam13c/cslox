@@ -25,8 +25,11 @@ var exprSpecs = new[]{
 
 var stmtSpecs = new[]{
 		new Spec("Block:List<Stmt> statements"),
+		new Spec("Break:Token keyword"),
 		new Spec("Class:Token name,Expr.Variable superclass,List<Stmt.Function> methods"),
+		new Spec("Continue:Token keyword"),
 		new Spec("Expression:Expr expr"),
+		new Spec("For:Stmt initializer,Expr condition,Expr increment,Stmt body"),
 		new Spec("Function:Token name,List<Token> parms,List<Stmt> body"),
 		new Spec("If:Expr condition,Stmt thenBranch,Stmt elseBranch"),
 		new Spec("Print:Expr expr"),

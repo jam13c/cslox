@@ -40,6 +40,9 @@ namespace CSLox
             var statements = parser.Parse();
             if (hadError) return;
 
+            if (statements.Count == 1 && statements[0] is Stmt.Expression expr)
+                statements = new List<Stmt> { new Stmt.Print(expr.Expr) };
+
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);
             if (hadError) return;

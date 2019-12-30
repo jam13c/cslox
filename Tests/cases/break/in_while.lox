@@ -1,0 +1,7 @@
+﻿var c = 0;
+while(c<5)
+{
+   print c;
+   if(c == 3) break;
+   c = c + 1;
+}

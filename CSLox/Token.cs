@@ -35,7 +35,7 @@ namespace CSLox
         Identifier, String, Number,
 
         // Keywords
-        And,Class,Else,False,Fun,For,If,Nil,Or,Print,Return,Super,This,True,Var,While,
+        And,Class,Else,False,Fun,For,If,Nil,Or,Print,Return,Super,This,True,Var,While,Break,Continue,
 
         EOF
 
