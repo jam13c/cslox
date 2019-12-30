@@ -26,7 +26,7 @@ namespace CSLox
     public enum TokenType
     {
         // Single char
-        LeftParen, RightParen, LeftBrace, RightBrace,Comma,Dot,Minus,Plus,Semicolon,Slash,Star,
+        LeftParen, RightParen, LeftBrace, RightBrace,Comma,Dot,Minus,Plus,Semicolon,Slash,Star, QuestionMark, Colon,
 
         // one or two char
         Bang, BangEqual, Equal,EqualEqual,Greater,GreaterEqual,Less,LessEqual,

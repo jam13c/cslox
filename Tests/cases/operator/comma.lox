@@ -1,0 +1,8 @@
+﻿print true, 3; // expect 3;
+var x;
+var y;
+print x=2,y = 3; // expect 3;
+print x;// expect 2;
+
+print "Foo","Bar","Baz"; // expect Baz
+

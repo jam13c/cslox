@@ -1,0 +1,11 @@
+﻿var x = 1;
+
+print x == 1 ? "Foo" : "Bar"; // Expect Foo
+
+
+print x == 2 ? "Foo" : "Bar"; // Expect Bar
+ 
+ // Check right associative
+print x == 2 ? "Foo" : x == 3 ? "Bar" : "Baz"; // Expect Baz
+
+print (true ? true : false ? 't' : 'f'); // expect True

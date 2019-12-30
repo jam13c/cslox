@@ -207,7 +207,32 @@ namespace CSLox
 
         private Expr Expression()
         {
-            return Assignment();
+            return Comma();
+        }
+
+        private Expr Comma()
+        {
+            var expr = Ternary();
+            if(Match(TokenType.Comma))
+            {
+                var op = Previous();
+                var right = Expression();
+                return new Expr.Comma(expr, op, right);
+            }
+            return expr;
+        }
+
+        private Expr Ternary()
+        {
+            var expr = Assignment();
+            if(Match(TokenType.QuestionMark))
+            {
+                var trueExpr = Expression();
+                Consume(TokenType.Colon, "Expect ':' after expression");
+                var falseExpr = Expression();
+                return new Expr.Ternary(expr, trueExpr, falseExpr);
+            }
+            return expr;
         }
         private Expr Assignment()
         {

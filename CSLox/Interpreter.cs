@@ -116,6 +116,12 @@ namespace CSLox
 
             throw new RuntimeException("Can only call functions and classes", expr.Paren);
         }
+        public object VisitCommaExpr(Expr.Comma expr)
+        {
+            Evaluate(expr.Left);
+            return Evaluate(expr.Right);
+        }
+
         public object VisitGetExpr(Expr.Get expr)
         {
             var obj = Evaluate(expr.Obj);
@@ -172,6 +178,14 @@ namespace CSLox
                 throw new RuntimeException($"Undefined property '{expr.Method.Lexeme}'", expr.Method);
             }
             return method.Bind(obj);
+        }
+
+        public object VisitTernaryExpr(Expr.Ternary expr)
+        {
+            if (IsTruthy(Evaluate(expr.Condition)))
+                return Evaluate(expr.TrueExpr);
+            return Evaluate(expr.FalseExpr);
+
         }
 
         public object VisitThisExpr(Expr.This expr)
