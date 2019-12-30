@@ -153,6 +153,14 @@ namespace CSLox
                 Resolve(arg);
             return null;
         }
+
+        public object VisitCommaExpr(Expr.Comma expr)
+        {
+            Resolve(expr.Left);
+            Resolve(expr.Right);
+            return null;
+        }
+
         public object VisitGetExpr(Expr.Get expr)
         {
             Resolve(expr.Obj);
@@ -195,6 +203,14 @@ namespace CSLox
                 Runtime.Error(expr.Keyword, "Cannot use 'super' in class with no subclass");
             }
             ResolveLocal(expr, expr.Keyword);
+            return null;
+        }
+
+        public object VisitTernaryExpr(Expr.Ternary expr)
+        {
+            Resolve(expr.Condition);
+            Resolve(expr.TrueExpr);
+            Resolve(expr.FalseExpr);
             return null;
         }
 

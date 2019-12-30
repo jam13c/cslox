@@ -9,12 +9,14 @@ namespace CSLox
         T VisitAssignExpr(Expr.Assign expr);
         T VisitBinaryExpr(Expr.Binary expr);
         T VisitCallExpr(Expr.Call expr);
+        T VisitCommaExpr(Expr.Comma expr);
         T VisitGetExpr(Expr.Get expr);
         T VisitGroupingExpr(Expr.Grouping expr);
         T VisitLiteralExpr(Expr.Literal expr);
         T VisitLogicalExpr(Expr.Logical expr);
         T VisitSetExpr(Expr.Set expr);
         T VisitSuperExpr(Expr.Super expr);
+        T VisitTernaryExpr(Expr.Ternary expr);
         T VisitThisExpr(Expr.This expr);
         T VisitUnaryExpr(Expr.Unary expr);
         T VisitVariableExpr(Expr.Variable expr);
@@ -85,6 +87,19 @@ namespace CSLox
 			}
 			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitCallExpr(this);
 		}
+		public class Comma : Expr
+		{
+			public Expr Left { get; private set;}
+			public Token Op { get; private set;}
+			public Expr Right { get; private set;}
+			public Comma(Expr left, Token op, Expr right)
+			{
+				this.Left = left;
+				this.Op = op;
+				this.Right = right;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitCommaExpr(this);
+		}
 		public class Get : Expr
 		{
 			public Expr Obj { get; private set;}
@@ -150,6 +165,19 @@ namespace CSLox
 				this.Method = method;
 			}
 			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitSuperExpr(this);
+		}
+		public class Ternary : Expr
+		{
+			public Expr Condition { get; private set;}
+			public Expr TrueExpr { get; private set;}
+			public Expr FalseExpr { get; private set;}
+			public Ternary(Expr condition, Expr trueExpr, Expr falseExpr)
+			{
+				this.Condition = condition;
+				this.TrueExpr = trueExpr;
+				this.FalseExpr = falseExpr;
+			}
+			public override T Accept<T>(IExprVisitor<T> visitor) => visitor.VisitTernaryExpr(this);
 		}
 		public class This : Expr
 		{

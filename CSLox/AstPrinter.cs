@@ -96,5 +96,15 @@ namespace CSLox
         {
             throw new NotImplementedException();
         }
+
+        public string VisitTernaryExpr(Expr.Ternary expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitCommaExpr(Expr.Comma expr)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
