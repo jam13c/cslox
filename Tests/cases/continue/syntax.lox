@@ -1,0 +1,26 @@
+﻿var c = 0;
+while(c<5)
+{
+   c = c + 1;
+   if(c == 3) continue;
+   print c;
+}
+
+for(var i=0;i<5;i=i+1)
+{
+   if(i == 2) continue;
+   print i;
+}
+
+for(var i=0;i<5;i=i+1)
+{
+    if(i==2) continue;
+    print "i=" + i;
+    var j = 0;
+    while(j<2)
+    {
+        j = j + 1;
+        if(j == 1) continue;
+        print "j=" + j;
+    }
+}

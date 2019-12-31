@@ -37,7 +37,7 @@ namespace CSLox
         {
             if(currentLoop == LoopType.None)
             {
-                Runtime.Error(stmt.Keyword, "Can only break from within loop");
+                Runtime.Error(stmt.Keyword, "Canot break outside of loop");
             }
         }
 
@@ -83,7 +83,7 @@ namespace CSLox
         {
             if (currentLoop == LoopType.None)
             {
-                Runtime.Error(stmt.Keyword, "Can only continue from within loop");
+                Runtime.Error(stmt.Keyword, "Canot continue outside of loop");
             }
         }
 

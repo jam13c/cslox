@@ -2,7 +2,7 @@
   "profiles": {
     "CSLox": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\git_repos\\jam13c\\cslox\\Tests\\cases\\continue\\in_for.lox"
+      "commandLineArgs": "C:\\git_repos\\jam13c\\cslox\\Tests\\cases\\comments\\multiline_missing_close.lox"
     }
   }
 }

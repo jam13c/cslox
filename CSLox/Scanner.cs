@@ -78,7 +78,7 @@ namespace CSLox
                     while (Peek() != '\n' && !IsAtEnd()) Advance();
                     break;
                 case '/' when Match('*'):
-                    BlockComment();
+                    BlockComment(line);
                     break;
                 case '/' when !Match('/'):
                     AddToken(TokenType.Slash);
@@ -110,15 +110,35 @@ namespace CSLox
             }
         }
 
-        private void BlockComment()
+        private void BlockComment(int line)
         {
-            while (!IsAtEnd() && (Peek() == '\n' || !(Peek() == '*' && PeekNext() == '/')))
-                Advance();
+            var nesting = 1;
+            while (!IsAtEnd() && nesting > 0)
+            {
+                var curr = Peek();
+                var next = PeekNext();
+                if(curr == '/' && next == '*')
+                {
+                    Advance();
+                    Advance();
+                    nesting++;
+                }
+                else if(curr == '*' && next == '/')
+                {
+                    Advance();
+                    Advance();
+                    nesting--;
+                }
+                else
+                {
+                    Advance();
+                }
 
-            if (!IsAtEnd())
-                Advance();
-            if (!IsAtEnd())
-                Advance();
+            }
+
+            if (nesting > 0 && IsAtEnd())
+                Runtime.Error(line, "Unterminated block comment");
+               
         }
 
         private void IdentifierToken()

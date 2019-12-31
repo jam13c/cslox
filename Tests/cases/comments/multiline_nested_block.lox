@@ -1,0 +1,4 @@
+﻿/* here is a multiline
+comment with /* another nested
+within*/ it */
+print "ok";

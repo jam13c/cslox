@@ -1,0 +1,5 @@
+﻿/* Here is a long
+comment which spreads 
+over multiple lines
+*/
+print "ok";
