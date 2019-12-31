@@ -18,9 +18,13 @@ namespace CSLox
             if (fields.TryGetValue(name.Lexeme, out var value))
                 return value;
 
+            var getter = cls.FindMethod($"get_{name.Lexeme}");
+            if (getter != null)
+                return getter.Bind(this);
+
             var method = cls.FindMethod(name.Lexeme);
             if (method != null)
-                return method.Bind(this);
+                return method.Bind(this).Call(null,null);
 
             throw new RuntimeException($"Undefined property '{name.Lexeme}'", name);
         }

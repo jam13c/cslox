@@ -127,7 +127,10 @@ namespace CSLox
             var obj = Evaluate(expr.Obj);
             if(obj is Instance inst)
             {
-                return inst.Get(expr.Name);
+                var result = inst.Get(expr.Name);
+                if (result is Function func && func.ToString().StartsWith("<fn get_"))
+                    return func.Call(this, null);
+                return result;
             }
 
             throw new RuntimeException("Only instances have properties", expr.Name);

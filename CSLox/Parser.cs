@@ -204,21 +204,31 @@ namespace CSLox
         private Stmt.Function Function(string kind)
         {
             var name = Consume(TokenType.Identifier, $"Expect {kind} name");
-            Consume(TokenType.LeftParen, $"Expect '(' after {kind} name");
             var parameters = new List<Token>();
-            if(!Check(TokenType.RightParen))
+            if (Match(TokenType.LeftParen))
             {
-                do
+                //Consume(TokenType.LeftParen, $"Expect '(' after {kind} name");
+                
+                if (!Check(TokenType.RightParen))
                 {
-                    if (parameters.Count >= 255)
+                    do
                     {
-                        Error(Peek(), "Cannot have more than 255 parameters");
+                        if (parameters.Count >= 255)
+                        {
+                            Error(Peek(), "Cannot have more than 255 parameters");
+                        }
+                        parameters.Add(Consume(TokenType.Identifier, "Expect parameter name"));
                     }
-                    parameters.Add(Consume(TokenType.Identifier, "Expect parameter name"));
+                    while (Match(TokenType.Comma));
                 }
-                while (Match(TokenType.Comma));
+                Consume(TokenType.RightParen, "Expect ')' after parameters");
             }
-            Consume(TokenType.RightParen, "Expect ')' after parameters");
+            else 
+            {
+                name = new Token(TokenType.Identifier, $"get_{name.Lexeme}", null, name.Line);
+                kind = "getter";
+            }
+
             Consume(TokenType.LeftBrace, $"Expect '{{' before {kind} body");
             var body = Block();
             return new Stmt.Function(name, parameters, body);
