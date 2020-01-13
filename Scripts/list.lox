@@ -1,0 +1,67 @@
+class List
+{
+    init(){
+        this.length = 0;
+        this.values = array(8);
+    }
+
+    add(elem){
+        if(this.length == this.values.length){
+            var newArr = array(this.values.length*2);
+            this.values.copyto(newArr);
+            this.values = newArr;
+        }
+        this.values.set(this.length,elem);
+        this.length = this.length + 1;
+    }
+    remove(elem){
+        var index = this.index(elem);
+        if(index > -1){
+            for(var i=index;i<this.length;i=i+1){
+                this.values.set(i,this.values.get(i+1));
+            }
+            this.length = this.length - 1;
+        }
+    }
+    item(index){
+        if(index < 0 or index >= this.length)
+            return null;
+        return this.values.get(index);
+    }
+
+    index(elem){
+        for(var i=0;i<this.length;i=i+1){
+            if(this.values.get(i) == elem)
+                return i;
+        }
+        return -1;
+    }
+
+    find(fn){
+        for(var i=0;i<this.length;i=i+1){
+            if(fn(this.values.get(i)))
+                return i;
+        }
+        return -1;
+    }
+}
+
+var list = List();
+list.add("Foo");
+list.add("Bar");
+list.add("Baz");
+for(var i=0;i<list.length;i=i+1)
+    print list.item(i);
+
+print(list.index("Bar"));
+
+
+list.remove("Baz");
+for(var i=0;i<list.length;i=i+1)
+    print list.item(i);
+
+print(list.index("Bar"));
+
+print(list.find(fun(elem){
+    return elem == "Bar";
+}));

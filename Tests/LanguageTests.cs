@@ -36,6 +36,7 @@ namespace Tests
         [InlineData("bool\\not.lox", new[] { "False", "True", "True" })]
         [InlineData("break\\syntax.lox", new[] { "0", "1", "2","3", "0", "1", "2","3", "i0", "j0", "j1", "i1", "i2", "j0","j1" })]
         [InlineData("class\\empty.lox", new[] { "Foo" })]
+        [InlineData("class\\getter.lox", new[] { "50.265482448" })]
         [InlineData("class\\inherited_method.lox", new[] { "in foo", "in bar","in baz" })]
         [InlineData("class\\local_inherit_other.lox", new[] { "B" })]
         [InlineData("class\\local_reference_self.lox", new[] { "Foo" })]
@@ -60,6 +61,14 @@ namespace Tests
         [InlineData("comments\\only_line_comment.lox")]
         [InlineData("comments\\only_line_comment_and_line.lox")]
         [InlineData("comments\\unicode.lox", new[] { "ok" })]
+        [InlineData("constructor\\arguments.lox", new[] { "init","1","2" })]
+        [InlineData("constructor\\call_init_early_return.lox", new[] { "init", "init", "Foo instance" })]
+        [InlineData("constructor\\call_init_explicitly.lox", new[] { "Foo.init(one)", "Foo.init(two)", "Foo instance","init" })]
+        [InlineData("constructor\\default.lox", new[] { "Foo instance" })]
+        [InlineData("constructor\\early_return.lox", new[] {  "init", "Foo instance" })]
+        [InlineData("constructor\\init_not_method.lox", new[] { "not initializer" })]
+        [InlineData("constructor\\return_in_nested_function.lox", new[] { "bar", "Foo instance" })]
+        [InlineData("continue\\syntax.lox",new[] { "1","3","4","5", "0", "1", "3", "4", "i0","j2","j3","i1","j2","j3","i3","j2","j3"})]
         public void PositiveTest(string file, string[] expectedResults = null)
         {
             var path = System.Environment.CurrentDirectory;
@@ -85,9 +94,14 @@ namespace Tests
         [InlineData("call\\num.lox", new[] { "[Line 1] Can only call functions and classes" })]
         [InlineData("call\\object.lox", new[] { "[Line 4] Can only call functions and classes" })]
         [InlineData("call\\string.lox", new[] { "[Line 1] Can only call functions and classes" })]
+        [InlineData("class\\getter_missing_brace.lox", new[] { "[Line 7] Error at 'return': Expect '{' before getter body", "[Line 9] Error at '}': Expect expression" })]
         [InlineData("class\\inherit_self.lox", new[] { "[Line 1] Error at 'Foo': Class cannot inherit from itself" })]
         [InlineData("class\\local_inherit_self.lox", new[] { "[Line 2] Error at 'Foo': Class cannot inherit from itself" })]
-
+        [InlineData("constructor\\default_arguments.lox", new[] { "[Line 3] Expected 0 arguments, but got 3" })]
+        [InlineData("constructor\\extra_arguments.lox", new[] { "[Line 8] Expected 2 arguments, but got 4" })]
+        [InlineData("constructor\\missing_arguments.lox", new[] { "[Line 5] Expected 2 arguments, but got 1" })]
+        [InlineData("constructor\\return_value.lox", new[] { "[Line 3] Error at 'return': Cannot return value from an initializer" })]
+        [InlineData("continue\\at_top_level.lox", new[] { "[Line 1] Error at 'continue': Canot continue outside of loop" })]
         public void NegativeTest(string file, string [] errors)
         {
             var path = System.Environment.CurrentDirectory;

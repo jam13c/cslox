@@ -24,7 +24,7 @@ namespace CSLox
 
             var method = cls.FindMethod(name.Lexeme);
             if (method != null)
-                return method.Bind(this).Call(null,null);
+                return method.Bind(this);
 
             throw new RuntimeException($"Undefined property '{name.Lexeme}'", name);
         }

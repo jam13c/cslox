@@ -259,7 +259,8 @@ namespace CSLox
 
         private Expr Expression()
         {
-            return Comma();
+            //return Comma();
+            return Ternary();
         }
 
         private Expr Comma()

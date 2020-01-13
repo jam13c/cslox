@@ -308,6 +308,8 @@ namespace CSLox
 
         private void ResolveAnonymousFunction(Expr.AnonymousFunction expr)
         {
+            var enclosingFunction = currentFunction;
+            currentFunction = FunctionType.Function;
             BeginScope();
             foreach (var parm in expr.Parms)
             {
@@ -316,6 +318,7 @@ namespace CSLox
             }
             Resolve(expr.Body);
             EndScope();
+            currentFunction = enclosingFunction;
         }
 
         private void BeginScope()

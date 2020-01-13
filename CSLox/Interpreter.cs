@@ -17,6 +17,7 @@ namespace CSLox
 
             Globals.Define("clock", new Clock());
             Globals.Define("input", new Input());
+            Globals.Define("array", new Native.Array());
         }
         public void Interpret(List<Stmt> statements)
         {
@@ -131,6 +132,10 @@ namespace CSLox
                 if (result is Function func && func.ToString().StartsWith("<fn get_"))
                     return func.Call(this, null);
                 return result;
+            }
+            else if(obj is Native.Array.Instance arr)
+            {
+                return arr.Get(expr.Name);
             }
 
             throw new RuntimeException("Only instances have properties", expr.Name);

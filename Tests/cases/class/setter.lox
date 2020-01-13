@@ -1,0 +1,22 @@
+﻿class Item{
+	init(){
+		this.prop = "Foo";
+	}
+
+	prop {
+		get {
+			print "In getter"; // Expect: In getter
+			return this.prop;
+		},
+		set(val) {	
+			print "In setter"; // Expect In setter
+			this.prop = val;
+		}
+	}
+}
+
+var item = Item();
+print item.prop; // Expect Foo
+
+item.prop = "Bar";
+print item.prop; // Expect Bar

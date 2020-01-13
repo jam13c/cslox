@@ -2,7 +2,7 @@
 while(c<5)
 {
    c = c + 1;
-   if(c == 3) continue;
+   if(c == 2) continue;
    print c;
 }
 
@@ -12,15 +12,15 @@ for(var i=0;i<5;i=i+1)
    print i;
 }
 
-for(var i=0;i<5;i=i+1)
+for(var i=0;i<4;i=i+1)
 {
     if(i==2) continue;
-    print "i=" + i;
+    print "i" + i;
     var j = 0;
-    while(j<2)
+    while(j<3)
     {
         j = j + 1;
         if(j == 1) continue;
-        print "j=" + j;
+        print "j" + j;
     }
 }

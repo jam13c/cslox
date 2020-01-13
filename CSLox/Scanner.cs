@@ -26,7 +26,9 @@ namespace CSLox
             ["var"] = TokenType.Var,
             ["while"] = TokenType.While,
             ["break"] = TokenType.Break,
-            ["continue"] = TokenType.Continue
+            ["continue"] = TokenType.Continue,
+            ["get"] = TokenType.Get,
+            ["set"] = TokenType.Set
         };
         private readonly string source;
         private readonly List<Token> tokens = new List<Token>();

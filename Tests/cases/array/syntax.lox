@@ -1,0 +1,9 @@
+﻿var arr = array(5);
+print arr.length; // Expect 5
+arr.set(0,"Foo");
+print arr.get(0); // Expect Foo
+
+var arr2 = array(10);
+arr.copyto(arr2);
+print arr2.length; // Expect 10
+print arr2.get(0); // expect "Foo";
